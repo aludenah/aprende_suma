@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suma Paso a Paso</title>
+
+    <!-- Cargamos Tailwind CSS para los estilos de la aplicación -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Cargamos React para que funcione toda la lógica interactiva -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+
+    <!-- Cargamos Babel para poder leer código de React (JSX) en el navegador -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // ---- ICONOS ----
+        const Icon = ({ children, size = 24, fill = "none", className = "" }) => (
+          <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            {children}
+          </svg>
+        );
+        const Maximize = ({ size }) => <Icon size={size}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></Icon>;
+        const Minimize = ({ size }) => <Icon size={size}><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></Icon>;
+        const Star = ({ size, fill, className }) => <Icon size={size} fill={fill} className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></Icon>;
+        const Sparkles = ({ size }) => <Icon size={size}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></Icon>;
+
+        // ---- COMPONENTES DE DISEÑO ----
+
+        // Pizarra Acrílica
+        const WhiteboardFrame = ({ children, className = "" }) => (
+          <div className="relative w-full max-w-5xl mx-auto my-2 sm:my-4 drop-shadow-2xl flex flex-col flex-1 min-h-[50vh]">
+            <div className="bg-[#f8f9fa] border-[8px] sm:border-[16px] border-[#cbd5e1] rounded-2xl sm:rounded-3xl relative overflow-visible flex flex-col w-full h-full flex-1">
+              
+              <div className="absolute top-1.5 left-2.5 sm:top-3 sm:left-4 z-30 select-none pointer-events-none opacity-50">
+                <span className="text-[#1a3687] text-xs sm:text-sm font-bold uppercase tracking-widest" style={{ fontFamily: 'Arial, sans-serif' }}>
+                  Helico App
+                </span>
+              </div>
+
+              <div className="absolute -top-[8px] -left-[8px] sm:-top-[16px] sm:-left-[16px] w-4 h-4 sm:w-8 sm:h-8 bg-[#94a3b8] rounded-tl-xl sm:rounded-tl-2xl z-20"></div>
+              <div className="absolute -top-[8px] -right-[8px] sm:-top-[16px] sm:-right-[16px] w-4 h-4 sm:w-8 sm:h-8 bg-[#94a3b8] rounded-tr-xl sm:rounded-tr-2xl z-20"></div>
+              <div className="absolute -bottom-[8px] -left-[8px] sm:-bottom-[16px] sm:-left-[16px] w-4 h-4 sm:w-8 sm:h-8 bg-[#94a3b8] rounded-bl-xl sm:rounded-bl-2xl z-20"></div>
+              <div className="absolute -bottom-[8px] -right-[8px] sm:-bottom-[16px] sm:-right-[16px] w-4 h-4 sm:w-8 sm:h-8 bg-[#94a3b8] rounded-br-xl sm:rounded-br-2xl z-20"></div>
+
+              <div className="absolute inset-0 bg-white shadow-[inset_0_0_40px_rgba(0,0,0,0.04)] z-0 rounded-sm"></div>
+              <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white to-transparent z-0 pointer-events-none opacity-90 rounded-t-sm"></div>
+
+              <div className={`relative z-10 w-full h-full overflow-y-auto overflow-x-hidden rounded-xl flex flex-col flex-1 ${className}`}>
+                {children}
+              </div>
+            </div>
+
+            <div className="absolute -bottom-4 sm:-bottom-6 left-[10%] right-[10%] h-4 sm:h-6 bg-[#cbd5e1] border-b-[4px] border-[#94a3b8] rounded-b-lg sm:rounded-b-xl shadow-xl flex items-end justify-center sm:justify-start px-8 gap-3 sm:gap-4 z-0">
+               <div className="w-12 sm:w-20 h-3 sm:h-4 bg-[#475569] rounded-t-sm shadow-[0_-2px_4px_rgba(0,0,0,0.3)] mb-[2px]"></div>
+               <div className="w-6 sm:w-10 h-2 sm:h-3 bg-red-600 rounded-t-sm shadow-[0_-2px_4px_rgba(0,0,0,0.3)] mb-[2px]"></div>
+               <div className="w-6 sm:w-10 h-2 sm:h-3 bg-blue-600 rounded-t-sm shadow-[0_-2px_4px_rgba(0,0,0,0.3)] mb-[2px]"></div>
+               <div className="w-6 sm:w-10 h-2 sm:h-3 bg-green-500 rounded-t-sm shadow-[0_-2px_4px_rgba(0,0,0,0.3)] mb-[2px]"></div>
+            </div>
+          </div>
+        );
+
+        // ---- LÓGICA PRINCIPAL ----
+        const STEP_MESSAGES = {
+          'u': '1. Suma las Unidades (columna azul)',
+          'c_t': '2. ¿Llevas algo? Anótalo arriba',
+          't': '3. Suma las Decenas (columna roja)',
+          'h': '4. Suma las Centenas (columna verde)'
+        };
+
+        function App() {
+          const [isFullscreen, setIsFullscreen] = useState(false);
+          const [solvedCount, setSolvedCount] = useState(0);
+          
+          // Datos del problema actual
+          const [n1, setN1] = useState(0);
+          const [n2, setN2] = useState(0);
+          const [steps, setSteps] = useState([]);
+          const [activeStepIndex, setActiveStepIndex] = useState(0);
+          
+          // Animaciones
+          const [isShaking, setIsShaking] = useState(false);
+          const [showCelebration, setShowCelebration] = useState(false);
+
+          useEffect(() => {
+            const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+          }, []);
+
+          const toggleFullScreen = () => {
+            if (!document.fullscreenElement) {
+              document.documentElement.requestFullscreen().catch(err => console.log(err));
+            } else {
+              if (document.exitFullscreen) document.exitFullscreen();
+            }
+          };
+
+          // Generador del problema paso a paso
+          const generateProblem = () => {
+            // Numeros de 2 cifras (10 a 99)
+            const num1 = Math.floor(Math.random() * 90) + 10;
+            const num2 = Math.floor(Math.random() * 90) + 10;
+
+            const u1 = num1 % 10;
+            const t1 = Math.floor(num1 / 10);
+            const u2 = num2 % 10;
+            const t2 = Math.floor(num2 / 10);
+
+            const sumU = u1 + u2;
+            const resU = sumU % 10;
+            const carryT = Math.floor(sumU / 10);
+
+            const sumT = t1 + t2 + carryT;
+            const resT = sumT % 10;
+            const resH = Math.floor(sumT / 10);
+
+            const newSteps = [];
+            // Paso 1: Unidades
+            newSteps.push({ id: 'u', exp: resU, val: null, color: 'text-blue-600' });
+            
+            // Paso 2: Reserva en decenas (si hay)
+            if (carryT > 0) {
+                newSteps.push({ id: 'c_t', exp: carryT, val: null, color: 'text-red-600' });
+            }
+            
+            // Paso 3: Decenas
+            newSteps.push({ id: 't', exp: resT, val: null, color: 'text-red-600' });
+            
+            // Paso 4: Centenas (si la suma pasa de 100)
+            if (resH > 0) {
+                newSteps.push({ id: 'h', exp: resH, val: null, color: 'text-green-600' });
+            }
+
+            setN1(num1);
+            setN2(num2);
+            setSteps(newSteps);
+            setActiveStepIndex(0);
+            setShowCelebration(false);
+          };
+
+          // Iniciar el primer problema al cargar
+          useEffect(() => {
+            generateProblem();
+          }, []);
+
+          const handleKeypadPress = (num) => {
+            if (showCelebration || isShaking) return;
+
+            const currentStep = steps[activeStepIndex];
+            
+            if (num === currentStep.exp) {
+              // Respuesta correcta para este paso
+              const updatedSteps = [...steps];
+              updatedSteps[activeStepIndex].val = num;
+              setSteps(updatedSteps);
+
+              if (activeStepIndex + 1 < steps.length) {
+                // Avanzar al siguiente paso
+                setActiveStepIndex(activeStepIndex + 1);
+              } else {
+                // Problema terminado
+                setShowCelebration(true);
+                setSolvedCount(prev => prev + 1);
+                setTimeout(() => {
+                  generateProblem();
+                }, 2500); // Esperar 2.5s antes de la siguiente suma
+              }
+            } else {
+              // Respuesta incorrecta: Sacudir la caja activa
+              setIsShaking(true);
+              setTimeout(() => setIsShaking(false), 500);
+            }
+          };
+
+          // Función auxiliar para renderizar cada cajita de paso a paso
+          const renderBox = (stepId, isCarry = false) => {
+            const stepIndex = steps.findIndex(s => s.id === stepId);
+            if (stepIndex === -1) return <div className={isCarry ? "w-8 sm:w-12 h-8 sm:h-12" : "w-12 sm:w-16 h-16 sm:h-20"}></div>; // No existe este paso (ej. no hay reserva)
+
+            const step = steps[stepIndex];
+            const isActive = activeStepIndex === stepIndex && !showCelebration;
+            const isLocked = activeStepIndex < stepIndex;
+            const isCompleted = step.val !== null;
+
+            if (isCarry) {
+              // Diseño del circulito de reserva ("llevar")
+              if (isCompleted) {
+                return <div className="w-8 sm:w-12 h-8 sm:h-12 bg-red-50 rounded-full flex items-center justify-center text-red-500 text-2xl sm:text-3xl font-black">{step.val}</div>;
+              }
+              if (isActive) {
+                return <div className={`w-8 sm:w-12 h-8 sm:h-12 border-4 border-yellow-400 bg-yellow-100 rounded-full animate-pulse ${isShaking ? 'animate-shake' : ''}`}></div>;
+              }
+              return <div className="w-8 sm:w-12 h-8 sm:h-12 border-4 border-dashed border-gray-200 rounded-full opacity-50"></div>;
+            } else {
+              // Diseño de la caja de resultado normal
+              if (isCompleted) {
+                return <div className={`w-12 sm:w-16 h-16 sm:h-20 flex items-center justify-center ${step.color} text-6xl sm:text-7xl md:text-8xl font-black leading-none pb-2`}>{step.val}</div>;
+              }
+              if (isActive) {
+                return <div className={`w-12 sm:w-16 h-16 sm:h-20 border-4 border-yellow-400 bg-yellow-100 rounded-xl animate-pulse ${isShaking ? 'animate-shake' : ''}`}></div>;
+              }
+              return <div className="w-12 sm:w-16 h-16 sm:h-20 border-4 border-dashed border-gray-200 rounded-xl opacity-50 bg-gray-50"></div>;
+            }
+          };
+
+          const activeMessage = steps[activeStepIndex] ? STEP_MESSAGES[steps[activeStepIndex].id] : '¡Excelente!';
+
+          return (
+            <div className="min-h-[100dvh] w-full bg-gradient-to-br from-cyan-50 to-blue-100 flex flex-col justify-between p-2 sm:p-4 md:p-6 font-sans selection:bg-none">
+              
+              <style>{`
+                @keyframes shake {
+                  10%, 90% { transform: translate3d(-2px, 0, 0); }
+                  20%, 80% { transform: translate3d(4px, 0, 0); }
+                  30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+                  40%, 60% { transform: translate3d(6px, 0, 0); }
+                }
+                .animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+              `}</style>
+
+              {/* Encabezado */}
+              <header className="shrink-0 w-full max-w-5xl mx-auto flex flex-row justify-between items-center bg-white rounded-3xl p-3 sm:p-5 shadow-xl border-4 border-yellow-300 z-10">
+                <div className="flex-1 flex justify-start items-center">
+                  <div className="bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-black text-sm sm:text-xl border-2 border-blue-200 shadow-sm flex items-center gap-2">
+                    <Star size={24} fill="currentColor" className="text-yellow-500" />
+                    <span>Sumas Resueltas: {solvedCount}</span>
+                  </div>
+                </div>
+
+                <div className="flex-1 flex justify-center items-center px-2">
+                  <h1 className="text-2xl sm:text-4xl font-black text-gray-700 whitespace-nowrap hidden sm:block" style={{ fontFamily: '"Comic Sans MS", "Marker Felt", sans-serif' }}>
+                    Suma Paso a Paso
+                  </h1>
+                </div>
+
+                <div className="flex-1 flex justify-end items-center gap-2">
+                  <button onClick={toggleFullScreen} className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-full transition-colors shrink-0" title="Pantalla Completa">
+                    {isFullscreen ? <Minimize size={24} /> : <Maximize size={24} />}
+                  </button>
+                </div>
+              </header>
+
+              {/* Pizarra Central */}
+              <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col items-center justify-center min-h-0 py-2 sm:py-4 relative">
+                
+                {/* Indicador de Instrucción Activa */}
+                <div className="absolute top-0 sm:-top-2 z-30 flex items-center justify-center w-full pointer-events-none">
+                  <div className="bg-white/90 backdrop-blur-sm text-gray-700 px-6 py-2 sm:py-3 rounded-full font-bold shadow-md border-2 border-gray-200 text-base sm:text-xl transition-all duration-300 transform" style={{ fontFamily: '"Comic Sans MS", "Marker Felt", sans-serif' }}>
+                    {activeMessage}
+                  </div>
+                </div>
+
+                <WhiteboardFrame className="p-4 sm:p-8 flex flex-col items-center justify-center w-full h-full pt-12 sm:pt-16">
+                  
+                  {showCelebration && (
+                    <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl animate-pulse">
+                      <div className="text-yellow-400 mb-4 animate-bounce">
+                        <Star size={100} fill="currentColor" />
+                      </div>
+                      <h2 className="text-5xl sm:text-7xl font-black text-green-500 mb-2 drop-shadow-lg" style={{ fontFamily: '"Comic Sans MS", "Marker Felt", sans-serif' }}>¡Genial!</h2>
+                    </div>
+                  )}
+
+                  {/* Estructura de la Suma Vertical */}
+                  <div className="grid grid-cols-4 gap-x-2 sm:gap-x-6 gap-y-1 sm:gap-y-2 items-end justify-items-center w-full max-w-sm sm:max-w-md mx-auto" style={{ fontFamily: '"Comic Sans MS", "Chalkboard SE", "Marker Felt", sans-serif' }}>
+                    
+                    {/* Fila 1: Reservas ("Lo que llevo") */}
+                    <div></div> {/* Col 1: Signo */}
+                    <div>{renderBox('c_h', true)}</div> {/* Col 2: Centenas (No suele haber reserva aquí en 2 cifras, pero mantenemos simetría) */}
+                    <div>{renderBox('c_t', true)}</div> {/* Col 3: Decenas */}
+                    <div></div> {/* Col 4: Unidades */}
+
+                    {/* Fila 2: Número 1 */}
+                    <div></div>
+                    <div></div> {/* Centenas N1 */}
+                    <div className="text-red-500 text-6xl sm:text-7xl md:text-8xl font-black leading-none">{Math.floor(n1 / 10)}</div>
+                    <div className="text-blue-500 text-6xl sm:text-7xl md:text-8xl font-black leading-none">{n1 % 10}</div>
+
+                    {/* Fila 3: Número 2 */}
+                    <div className="text-gray-800 text-5xl sm:text-7xl md:text-8xl font-black leading-none self-end pb-2 sm:pb-0">+</div>
+                    <div></div> {/* Centenas N2 */}
+                    <div className="text-red-500 text-6xl sm:text-7xl md:text-8xl font-black leading-none">{Math.floor(n2 / 10)}</div>
+                    <div className="text-blue-500 text-6xl sm:text-7xl md:text-8xl font-black leading-none">{n2 % 10}</div>
+
+                    {/* Fila 4: Línea Divisoria */}
+                    <div className="col-span-4 w-full border-b-[6px] sm:border-b-[10px] border-gray-800 rounded-full my-2 sm:my-4"></div>
+
+                    {/* Fila 5: Resultado (Cajas para llenar) */}
+                    <div></div>
+                    <div>{renderBox('h')}</div>
+                    <div>{renderBox('t')}</div>
+                    <div>{renderBox('u')}</div>
+
+                  </div>
+                </WhiteboardFrame>
+              </div>
+
+              {/* Teclado Numérico (0-9) */}
+              <div className="shrink-0 w-full max-w-2xl mx-auto px-2 sm:px-4 pb-2 sm:pb-4">
+                <div className="grid grid-cols-5 gap-2 sm:gap-4">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
+                    <button
+                      key={num}
+                      onClick={() => handleKeypadPress(num)}
+                      className="bg-white border-b-[6px] border-gray-300 hover:bg-gray-50 text-gray-800 text-3xl sm:text-5xl font-black py-3 sm:py-5 rounded-2xl shadow-sm active:border-b-0 active:translate-y-[6px] transition-all flex items-center justify-center select-none"
+                      style={{ fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif' }}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
