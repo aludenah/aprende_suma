@@ -3,328 +3,450 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Suma Paso a Paso</title>
-
-    <!-- Cargamos Tailwind CSS para los estilos de la aplicación -->
+    <title>Saco Oliveros | Academia Virtual</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Cargamos React para que funcione toda la lógica interactiva -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-
-    <!-- Cargamos Babel para poder leer código de React (JSX) en el navegador -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        /* Custom Scrollbar for the sidebar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f9fafb; 
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e5e7eb; 
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #d1d5db; 
+        }
+    </style>
 </head>
-<body>
-    <div id="root"></div>
+<body class="bg-gray-50 text-gray-800">
 
-    <script type="text/babel">
-        const { useState, useEffect } = React;
+    <!-- App Container -->
+    <div id="app"></div>
 
-        // ---- ICONOS ----
-        const Icon = ({ children, size = 24, fill = "none", className = "" }) => (
-          <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-            {children}
-          </svg>
-        );
-        const Maximize = ({ size }) => <Icon size={size}><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></Icon>;
-        const Minimize = ({ size }) => <Icon size={size}><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></Icon>;
-        const Star = ({ size, fill, className }) => <Icon size={size} fill={fill} className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></Icon>;
-        const Sparkles = ({ size }) => <Icon size={size}><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/><path d="M5 3v4"/><path d="M19 17v4"/><path d="M3 5h4"/><path d="M17 19h4"/></Icon>;
+    <script>
+        // --- DATOS ---
+        const COURSES = [
+            { id: 1, name: 'Lenguaje', icon: 'book-open', category: 'Letras', topics: ['La Comunicación', 'El Lenguaje', 'Fonética y Fonología', 'La Sílaba y la Secuencia Vocálicas', 'Acentuación: Prosódica y Ortográfica', 'Uso de las Letras Mayúsculas', 'Semántica', 'Morfología', 'El Sustantivo o Nombre', 'Pronombre', 'El Adjetivo', 'Los Determinantes', 'El Verbo I', 'El Verbo II', 'El Adverbio', 'Preposición y Conjunción', 'La Sintaxis', 'El Sujeto', 'Predicado', 'La Oración Compuesta', 'La Oración Subordinada Sustantiva', 'La Oración Subordinada Adjetiva y Adverbial', 'Signos de Puntuación I', 'Signos de Puntuación II - Textos'] },
+            { id: 2, name: 'Literatura', icon: 'file-text', category: 'Letras', topics: ['Figuras Literarias', 'Clasicismo Griego I', 'Clasicismo Griego II', 'Literatura Medieval', 'Renacimiento', 'Romanticismo', 'Realismo', 'Vanguardismo', 'Poesía en el Siglo de Oro Español', 'Novela en el Siglo de Oro Español', 'Teatro en el Siglo de Oro Español', 'Generación del 27', 'Modernismo Hispanoamericano', 'Nueva Narrativa Hispanoamericana', 'Boom Hispanoamericano', 'Literatura Quechua y de la Conquista', 'Literatura de la Emancipación y Costumbrismo', 'Romanticismo Peruano y Realismo Peruano', 'Posmodernismo', 'Vanguardismo Peruano', 'Indigenismo', 'Generación del 50', 'Generación del 60', 'Generación del 60 II'] },
+            { id: 3, name: 'Raz. Verbal', icon: 'edit-3', category: 'Letras', topics: ['Sinónimos', 'Tipología Textual - Modelo Deco', 'Antónimos', 'Comprensión de Lectura II: Tipos de Ítems', 'Etimología', 'Comprensión de Lectura III: Ideas Principales', 'Términos Excluidos', 'Comprensión de Lectura IV: Relaciones Semánticas', 'Inclusión e Implicación', 'Comprensión de Lectura V: Compatibilidad', 'Series Verbales', 'Comprensión de Lectura VI: Inferencias', 'Analogías I', 'Comprensión de Lectura VII: Extrapolación', 'Analogías II', 'Comprensión de Lectura VIII: Texto Argumentativo', 'Práctica Integral', 'Comprensión de Lectura IX: Textos Literarios', 'Oraciones Incompletas', 'Comprensión de Lectura X: Textos Científicos', 'Conectores Lógicos I', 'Comprensión de Lectura XI: Textos Filosóficos', 'Conectores Lógicos II', 'Comprensión de Lectura XII'] },
+            { id: 4, name: 'Economía', icon: 'trending-up', category: 'Humanidades', topics: ['Generalidades', 'Necesidades, Bienes y Servicios', 'Proceso Económico y Producción', 'Los Costos de Producción', 'Trabajo', 'Capital y Empresa', 'Emprendimiento', 'Circulación y Presupuesto Familiar', 'Mercado – Modelos de Mercado', 'Demanda Elasticidad Precio Demanda', 'Oferta y Equilibrio', 'Dinero e Inflación', 'Crédito y Sistema Financiero', 'El Sector Público', 'Economía Informal', 'Presupuesto General de la República', 'Comercio Internacional', 'Balanza de Pagos y Ciclos Económicos', 'OFI – Integración Económica', 'Derechos Primarios', 'Derechos Fundamentales y Garantías', 'La Ciudadanía y el Estado', 'El Estado - Poder Legislativo', 'El Poder Ejecutivo y Judicial'] },
+            { id: 5, name: 'Geografía', icon: 'globe', category: 'Humanidades', topics: ['Ciencia Geográfica - Líneas Imaginarias', 'La Cartografía', 'Fuerzas Geológicas Internas', 'Fuerzas Geológicas Externas', 'Relieve del Perú I', 'Relieve del Perú II', 'Cambio Climático y Calentamiento Global', 'Clima en el Perú y sus Factores', 'Climas del Perú II', 'Hidrografía', 'Mar Peruano', 'Principales Ecosistemas del Mundo', 'Ocho Regiones Naturales', 'Ecorregiones del Perú', 'Recursos Naturales y sus Problemas I', 'Recursos Naturales y sus Problemas II', 'Áreas Naturales Protegidas', 'Desastres Naturales y Gestión del Riesgo', 'Población Humana del Perú', 'Actividades Económicas I', 'Actividades Económicas II', 'Perú Político', 'Los Continentes I', 'Los Continentes II'] },
+            { id: 6, name: 'Historia del Perú', icon: 'landmark', category: 'Humanidades', topics: ['Poblamiento Americano', 'Primer Horizonte y Primer Desarrollo Regional', 'Horizonte Medio e Intermedio Tardío', 'Incas I', 'Incas II', 'Invasión Europea al Tahuantinsuyo', 'Resistencia Indígena y Guerras Civiles', 'Virreinato Peruano: Origen', 'Virreinato Peruano: Estructura', 'Luchas Anticoloniales', 'Precursores y Rebeliones Criollas', 'Corriente Libertadora del Sur', 'Primer Congreso y Corriente Libertadora del Norte', 'Primer Militarismo e Inicios de la República', 'Prosperidad Falaz', 'Entre Pezet y el Civilismo de Pardo', 'Guerra del Salitre y Segundo Militarismo', 'República Aristocrática', 'Oncenio de Leguía', 'Tercer Militarismo a la Primavera Democrática', 'Del Ochenio al Segundo Belaundismo', 'Gobierno de Fujimori', 'Transición Democrática', 'Perú en el Siglo XXI'] },
+            { id: 7, name: 'Historia Universal', icon: 'globe', category: 'Humanidades', topics: ['Origen del Hombre y Comunidad Primitiva', 'Mesopotamia y Egipto', 'Civilizaciones del Lejano Oriente', 'Grecia Antigua', 'Roma', 'Alta Edad Media e Imperio Bizantino', 'Imperio Árabe Musulmán y Carolingio', 'Feudalismo y Cruzadas', 'Baja Edad Media y Expansión Europea', 'Humanismo, Renacimiento y Crisis Religiosa', 'Monarquías Modernas Absolutistas', 'Ilustración e Independencia de las 13 Colonias', 'Revolución Francesa', 'Era Napoleónica y Revoluciones Liberales', 'Revoluciones Industriales e Imperialismo', 'Primera Guerra Mundial', 'Revolución Rusa', 'Periodo Entre Guerras', 'Segunda Guerra Mundial', 'Guerra Fría I', 'Guerra Fría II', 'Fin del Bloque Soviético y Guerra de Yugoslavia', 'El Nuevo Orden Mundial', 'Mundo Contemporáneo'] },
+            { id: 8, name: 'Psicología', icon: 'brain', category: 'Humanidades', topics: ['Psicología como Ciencia', 'Bases Biológicas de la Conducta', 'Bases Sociales de la Conducta', 'Sensación y Percepción', 'Antropología Filosófica', 'Gnoseología', 'Epistemología', 'Axiología', 'Memoria y Atención', 'Pensamiento y Lenguaje', 'Aprendizaje', 'Inteligencia', 'Ética', 'Filosofía Antigua', 'Filosofía Antigua II y Medieval', 'Filosofía Moderna', 'Desarrollo de la Inteligencia', 'Afectividad y Motivación', 'Desarrollo Humano', 'Personalidad y Psicoanálisis', 'Alteraciones de la Personalidad', 'Filosofía Siglo XIX', 'Filosofía Siglo XX', 'Filosofía en el Perú'] },
+            { id: 9, name: 'Biología', icon: 'dna', category: 'Ciencias', topics: ['Bioelementos, Agua, Glúcidos y Lípidos', 'Proteínas y Ácidos Nucleicos', 'Virus y Bacterias', 'Célula Eucariota', 'Fisiología y Fotosíntesis', 'Respiración Celular', 'Ciclo Celular, Mitosis y Meiosis', 'Genética Mendeliana', 'Genética Posmendeliana y Citogenética', 'Evolución y Taxonomía Biológica', 'Taxonomía II', 'Reino Plantae I: Taxonomía e Histología', 'Reino Plantae II: Organografía', 'Reino Animal: Taxonomía', 'Intercambio Gaseoso Animal y Humano', 'Sistemas Digestivos', 'Circulación y Transporte', 'Sistema Linfático e Inmune', 'Coordinación Química y Endocrina', 'Sistemas Nerviosos y Sensorial', 'Salud y Enfermedad', 'Reproducción Animal', 'Reproducción Humana', 'Ecología y Recursos Naturales'] },
+            { id: 10, name: 'Física', icon: 'atom', category: 'Ciencias', topics: ['Vectores I', 'Vectores II', 'Movimiento Rectilíneo Uniforme (MRU)', 'Movimiento Rectilíneo Uniformemente Variado (MRUV)', 'Movimiento Vertical de Caída Libre', 'Movimiento Parabólico de Caída Libre', 'Estática I', 'Estática II', 'Rozamiento y Dinámica', 'Trabajo Mecánico', 'Energía Mecánica I', 'Energía Mecánica II - Potencia', 'Hidrostática I', 'Hidrostática II', 'Movimiento Armónico Simple (MAS)', 'Ondas Mecánicas', 'Electrostática I', 'Electrostática II', 'Electrodinámica I', 'Electrodinámica II', 'Electromagnetismo I', 'Electromagnetismo II', 'Física Moderna', 'Relatividad'] },
+            { id: 11, name: 'Química', icon: 'flask-conical', category: 'Ciencias', topics: ['Estructura Atómica', 'Números Cuánticos', 'Distribución Electrónica', 'Tabla Periódica Actual', 'Enlace Químico I', 'Enlace Químico II', 'Cantidad de Sustancia', 'Estado Gaseoso I', 'Reacciones Químicas I', 'Reacciones Químicas II', 'Estequiometría I', 'Estequiometría II', 'Masa Equivalente', 'Soluciones I', 'Soluciones II', 'Cinética Química', 'Equilibrio Químico', 'Ácidos y Bases', 'Celdas Galvánicas y Electrolíticas', 'Introducción a la Química Orgánica', 'Química Orgánica: Hidrocarburos', 'Química Orgánica: Funciones Oxigenadas I', 'Química Orgánica: Funciones Oxigenadas II', 'Compuestos Aromáticos'] },
+            { id: 12, name: 'Álgebra', icon: 'calculator', category: 'Matemáticas', topics: ['Polinomios I: Expresiones Algebraicas', 'Polinomios II: Teoría de Grados', 'Productos Notables', 'División I: Horner y Ruffini', 'División II: Teorema del Resto y Divisibilidad', 'Cocientes Notables', 'Factorización I', 'Factorización II', 'Factorial y Número Combinatorio', 'Binomio de Newton', 'Radicación', 'Teoría de Ecuaciones', 'Ecuaciones Cuadráticas', 'Ecuaciones Polinomiales', 'Matrices y Determinantes', 'Sistemas de Ecuaciones', 'Desigualdades e Inecuaciones Racionales', 'Inecuaciones Irracionales y Exponenciales', 'Valor Absoluto – Ecuaciones e Inecuaciones', 'Sistemas de Inecuaciones y Programación Lineal', 'Funciones I', 'Funciones Especiales II', 'Logaritmos I', 'Logaritmos II'] },
+            { id: 13, name: 'Aritmética', icon: 'calculator', category: 'Matemáticas', topics: ['Razones y Proporciones', 'Serie de Razones Geométricas Equivalentes', 'Promedios', 'Magnitudes Proporcionales y Regla de Tres', 'Reparto Proporcional', 'Tanto Por Ciento', 'Regla de Mezcla', 'Regla de Interés', 'Regla de Descuento', 'Lógica Proposicional', 'Teoría de Conjuntos I', 'Teoría de Conjuntos II', 'Teoría Numeración', 'Conteo de Números', 'Adición y Sustracción', 'Multiplicación y División', 'Divisibilidad', 'Criterios de Divisibilidad', 'Números Primos', 'MCM y MCD', 'Números Racionales I', 'Números Racionales II', 'Análisis Combinatorio', 'Probabilidades'] },
+            { id: 14, name: 'Geometría', icon: 'layout', category: 'Matemáticas', topics: ['Triángulo', 'Líneas Notables', 'Triángulos Congruentes', 'Cuadrilátero', 'Cuadriláteros II', 'Ángulos en la Circunferencia', 'Líneas en la Circunferencia', 'Puntos Notables', 'Proporcionalidad de Segmentos y Semejanzas', 'Relaciones Métricas en la Circunferencia', 'Relaciones Métricas en Triángulos Rectángulos', 'Relaciones Métricas en Triángulos Oblicuángulos', 'Área de Regiones Triangulares', 'Área de Regiones Cuadrangulares', 'Área de Regiones Circulares', 'Poliedros Regulares', 'Prisma y Cilindro', 'Pirámide y Cono', 'Esfera y Pappus', 'Plano Cartesiano', 'Ecuación de la Recta', 'Ecuación de la Circunferencia', 'Ecuación de la Parábola', 'Ecuación de la Elipse'] },
+            { id: 15, name: 'Raz. Matemático', icon: 'brain', category: 'Matemáticas', topics: ['Juegos Lógicos', 'Razonamiento Lógico I', 'Razonamiento Lógico II', 'Calendarios', 'Algoritmia Sensorial I', 'Algoritmia Sensorial II', 'Planteo de Ecuaciones I', 'Planteo de Ecuaciones II', 'Interpretación de Enunciados', 'Arreglos Numéricos', 'Operaciones Matemáticas', 'Sucesiones', 'Cronometría I', 'Cronometría II', 'Certezas - Máximos y Mínimos', 'Razonamiento Geométrico', 'Frecuencia de Sucesos', 'Deducción Simple y Deducción Compuesta', 'Formas y Movimientos', 'Situaciones Topológicas', 'Localización', 'Problemas de Cantidad e Inferencia', 'Interpretación de Gráficos Estadísticos', 'Simetría y Reflexiones'] },
+            { id: 16, name: 'Trigonometría', icon: 'layout', category: 'Matemáticas', topics: ['Sistema de Medición Angular', 'Razones Trigonométricas de un Ángulo Agudo I', 'Razones Trigonométricas de un Ángulo Agudo II', 'Resolución de Triángulos Rectángulos', 'Geometría Analítica', 'RT de un Ángulo en Posición Normal I', 'RT de un Ángulo en Posición Normal II', 'Reducción al Primer Cuadrante I', 'Reducción al Primer Cuadrante II', 'Circunferencia Trigonométrica I', 'Circunferencia Trigonométrica II', 'Identidades Trigonométricas Fundamentales', 'Identidades de Ángulos Compuestos I', 'Identidades de Ángulos Compuestos II', 'Identidades de Ángulo Doble', 'Identidades de Ángulo Triple', 'Transformaciones Trigonométricas', 'Funciones Trigonométricas I', 'Funciones Trigonométricas II', 'Funciones Trigonométricas Inversas', 'Ecuaciones Trigonométricas I', 'Ecuación Trigonométrica II', 'Resolución de Triángulos Oblicuángulos', 'Práctica Integral'] },
+        ];
 
-        // ---- COMPONENTES DE DISEÑO ----
+        const STATS = [
+            { value: '16', label: 'Cursos', icon: 'book-open' },
+            { value: '384', label: 'Capítulos', icon: 'layout' },
+            { value: '24', label: 'Temas por Curso', icon: 'check-square' },
+            { value: '+5k', label: 'Minutos', icon: 'clock' },
+        ];
 
-        // Pizarra Acrílica
-        const WhiteboardFrame = ({ children, className = "" }) => (
-          <div className="relative w-full max-w-5xl mx-auto my-2 sm:my-4 drop-shadow-2xl flex flex-col flex-1 min-h-[50vh]">
-            <div className="bg-[#f8f9fa] border-[8px] sm:border-[16px] border-[#cbd5e1] rounded-2xl sm:rounded-3xl relative overflow-visible flex flex-col w-full h-full flex-1">
-              
-              <div className="absolute top-1.5 left-2.5 sm:top-3 sm:left-4 z-30 select-none pointer-events-none opacity-50">
-                <span className="text-[#1a3687] text-xs sm:text-sm font-bold uppercase tracking-widest" style={{ fontFamily: 'Arial, sans-serif' }}>
-                  Helico App
-                </span>
-              </div>
+        const METHODOLOGY = [
+            { title: 'Teoría', time: '10-15 min', desc: 'Explicación concisa de los conceptos clave.', icon: 'play-circle' },
+            { title: 'Práctica', time: '10-15 min', desc: 'Resolución de 8 problemas tipo examen de admisión.', icon: 'edit-3' },
+            { title: 'Autoaprendizaje', time: 'Test interactivo', desc: 'Formulario de 10 preguntas con retroalimentación.', icon: 'check-square' },
+            { title: 'Solucionario', time: 'PDF descargable', desc: 'Material paso a paso para reforzar lo aprendido.', icon: 'file-down' },
+        ];
 
-              <div className="absolute -top-[8px] -left-[8px] sm:-top-[16px] sm:-left-[16px] w-4 h-4 sm:w-8 sm:h-8 bg-[#94a3b8] rounded-tl-xl sm:rounded-tl-2xl z-20"></div>
-              <div className="absolute -top-[8px] -right-[8px] sm:-top-[16px] sm:-right-[16px] w-4 h-4 sm:w-8 sm:h-8 bg-[#94a3b8] rounded-tr-xl sm:rounded-tr-2xl z-20"></div>
-              <div className="absolute -bottom-[8px] -left-[8px] sm:-bottom-[16px] sm:-left-[16px] w-4 h-4 sm:w-8 sm:h-8 bg-[#94a3b8] rounded-bl-xl sm:rounded-bl-2xl z-20"></div>
-              <div className="absolute -bottom-[8px] -right-[8px] sm:-bottom-[16px] sm:-right-[16px] w-4 h-4 sm:w-8 sm:h-8 bg-[#94a3b8] rounded-br-xl sm:rounded-br-2xl z-20"></div>
-
-              <div className="absolute inset-0 bg-white shadow-[inset_0_0_40px_rgba(0,0,0,0.04)] z-0 rounded-sm"></div>
-              <div className="absolute top-0 left-0 right-0 h-1/3 bg-gradient-to-b from-white to-transparent z-0 pointer-events-none opacity-90 rounded-t-sm"></div>
-
-              <div className={`relative z-10 w-full h-full overflow-y-auto overflow-x-hidden rounded-xl flex flex-col flex-1 ${className}`}>
-                {children}
-              </div>
-            </div>
-
-            <div className="absolute -bottom-4 sm:-bottom-6 left-[10%] right-[10%] h-4 sm:h-6 bg-[#cbd5e1] border-b-[4px] border-[#94a3b8] rounded-b-lg sm:rounded-b-xl shadow-xl flex items-end justify-center sm:justify-start px-8 gap-3 sm:gap-4 z-0">
-               <div className="w-12 sm:w-20 h-3 sm:h-4 bg-[#475569] rounded-t-sm shadow-[0_-2px_4px_rgba(0,0,0,0.3)] mb-[2px]"></div>
-               <div className="w-6 sm:w-10 h-2 sm:h-3 bg-red-600 rounded-t-sm shadow-[0_-2px_4px_rgba(0,0,0,0.3)] mb-[2px]"></div>
-               <div className="w-6 sm:w-10 h-2 sm:h-3 bg-blue-600 rounded-t-sm shadow-[0_-2px_4px_rgba(0,0,0,0.3)] mb-[2px]"></div>
-               <div className="w-6 sm:w-10 h-2 sm:h-3 bg-green-500 rounded-t-sm shadow-[0_-2px_4px_rgba(0,0,0,0.3)] mb-[2px]"></div>
-            </div>
-          </div>
-        );
-
-        // ---- LÓGICA PRINCIPAL ----
-        const STEP_MESSAGES = {
-          'u': '1. Suma las Unidades (columna azul)',
-          'c_t': '2. ¿Llevas algo? Anótalo arriba',
-          't': '3. Suma las Decenas (columna roja)',
-          'h': '4. Suma las Centenas (columna verde)'
+        // --- ESTADO DE LA APLICACIÓN ---
+        let state = {
+            activeCourse: null,
+            activeTopicIndex: 0,
+            activeTab: 'Teoría',
+            mobileMenuOpen: false
         };
 
-        function App() {
-          const [isFullscreen, setIsFullscreen] = useState(false);
-          const [solvedCount, setSolvedCount] = useState(0);
-          
-          // Datos del problema actual
-          const [n1, setN1] = useState(0);
-          const [n2, setN2] = useState(0);
-          const [steps, setSteps] = useState([]);
-          const [activeStepIndex, setActiveStepIndex] = useState(0);
-          
-          // Animaciones
-          const [isShaking, setIsShaking] = useState(false);
-          const [showCelebration, setShowCelebration] = useState(false);
-
-          useEffect(() => {
-            const handleFullscreenChange = () => setIsFullscreen(!!document.fullscreenElement);
-            document.addEventListener('fullscreenchange', handleFullscreenChange);
-            return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
-          }, []);
-
-          const toggleFullScreen = () => {
-            if (!document.fullscreenElement) {
-              document.documentElement.requestFullscreen().catch(err => console.log(err));
-            } else {
-              if (document.exitFullscreen) document.exitFullscreen();
-            }
-          };
-
-          // Generador del problema paso a paso
-          const generateProblem = () => {
-            // Numeros de 2 cifras (10 a 99)
-            const num1 = Math.floor(Math.random() * 90) + 10;
-            const num2 = Math.floor(Math.random() * 90) + 10;
-
-            const u1 = num1 % 10;
-            const t1 = Math.floor(num1 / 10);
-            const u2 = num2 % 10;
-            const t2 = Math.floor(num2 / 10);
-
-            const sumU = u1 + u2;
-            const resU = sumU % 10;
-            const carryT = Math.floor(sumU / 10);
-
-            const sumT = t1 + t2 + carryT;
-            const resT = sumT % 10;
-            const resH = Math.floor(sumT / 10);
-
-            const newSteps = [];
-            // Paso 1: Unidades
-            newSteps.push({ id: 'u', exp: resU, val: null, color: 'text-blue-600' });
-            
-            // Paso 2: Reserva en decenas (si hay)
-            if (carryT > 0) {
-                newSteps.push({ id: 'c_t', exp: carryT, val: null, color: 'text-red-600' });
-            }
-            
-            // Paso 3: Decenas
-            newSteps.push({ id: 't', exp: resT, val: null, color: 'text-red-600' });
-            
-            // Paso 4: Centenas (si la suma pasa de 100)
-            if (resH > 0) {
-                newSteps.push({ id: 'h', exp: resH, val: null, color: 'text-green-600' });
-            }
-
-            setN1(num1);
-            setN2(num2);
-            setSteps(newSteps);
-            setActiveStepIndex(0);
-            setShowCelebration(false);
-          };
-
-          // Iniciar el primer problema al cargar
-          useEffect(() => {
-            generateProblem();
-          }, []);
-
-          const handleKeypadPress = (num) => {
-            if (showCelebration || isShaking) return;
-
-            const currentStep = steps[activeStepIndex];
-            
-            if (num === currentStep.exp) {
-              // Respuesta correcta para este paso
-              const updatedSteps = [...steps];
-              updatedSteps[activeStepIndex].val = num;
-              setSteps(updatedSteps);
-
-              if (activeStepIndex + 1 < steps.length) {
-                // Avanzar al siguiente paso
-                setActiveStepIndex(activeStepIndex + 1);
-              } else {
-                // Problema terminado
-                setShowCelebration(true);
-                setSolvedCount(prev => prev + 1);
-                setTimeout(() => {
-                  generateProblem();
-                }, 2500); // Esperar 2.5s antes de la siguiente suma
-              }
-            } else {
-              // Respuesta incorrecta: Sacudir la caja activa
-              setIsShaking(true);
-              setTimeout(() => setIsShaking(false), 500);
-            }
-          };
-
-          // Función auxiliar para renderizar cada cajita de paso a paso
-          const renderBox = (stepId, isCarry = false) => {
-            const stepIndex = steps.findIndex(s => s.id === stepId);
-            if (stepIndex === -1) return <div className={isCarry ? "w-8 sm:w-12 h-8 sm:h-12" : "w-12 sm:w-16 h-16 sm:h-20"}></div>; // No existe este paso (ej. no hay reserva)
-
-            const step = steps[stepIndex];
-            const isActive = activeStepIndex === stepIndex && !showCelebration;
-            const isLocked = activeStepIndex < stepIndex;
-            const isCompleted = step.val !== null;
-
-            if (isCarry) {
-              // Diseño del circulito de reserva ("llevar")
-              if (isCompleted) {
-                return <div className="w-8 sm:w-12 h-8 sm:h-12 bg-red-50 rounded-full flex items-center justify-center text-red-500 text-2xl sm:text-3xl font-black">{step.val}</div>;
-              }
-              if (isActive) {
-                return <div className={`w-8 sm:w-12 h-8 sm:h-12 border-4 border-yellow-400 bg-yellow-100 rounded-full animate-pulse ${isShaking ? 'animate-shake' : ''}`}></div>;
-              }
-              return <div className="w-8 sm:w-12 h-8 sm:h-12 border-4 border-dashed border-gray-200 rounded-full opacity-50"></div>;
-            } else {
-              // Diseño de la caja de resultado normal
-              if (isCompleted) {
-                return <div className={`w-12 sm:w-16 h-16 sm:h-20 flex items-center justify-center ${step.color} text-6xl sm:text-7xl md:text-8xl font-black leading-none pb-2`}>{step.val}</div>;
-              }
-              if (isActive) {
-                return <div className={`w-12 sm:w-16 h-16 sm:h-20 border-4 border-yellow-400 bg-yellow-100 rounded-xl animate-pulse ${isShaking ? 'animate-shake' : ''}`}></div>;
-              }
-              return <div className="w-12 sm:w-16 h-16 sm:h-20 border-4 border-dashed border-gray-200 rounded-xl opacity-50 bg-gray-50"></div>;
-            }
-          };
-
-          const activeMessage = steps[activeStepIndex] ? STEP_MESSAGES[steps[activeStepIndex].id] : '¡Excelente!';
-
-          return (
-            <div className="min-h-[100dvh] w-full bg-gradient-to-br from-cyan-50 to-blue-100 flex flex-col justify-between p-2 sm:p-4 md:p-6 font-sans selection:bg-none">
-              
-              <style>{`
-                @keyframes shake {
-                  10%, 90% { transform: translate3d(-2px, 0, 0); }
-                  20%, 80% { transform: translate3d(4px, 0, 0); }
-                  30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
-                  40%, 60% { transform: translate3d(6px, 0, 0); }
-                }
-                .animate-shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
-              `}</style>
-
-              {/* Encabezado */}
-              <header className="shrink-0 w-full max-w-5xl mx-auto flex flex-row justify-between items-center bg-white rounded-3xl p-3 sm:p-5 shadow-xl border-4 border-yellow-300 z-10">
-                <div className="flex-1 flex justify-start items-center">
-                  <div className="bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-black text-sm sm:text-xl border-2 border-blue-200 shadow-sm flex items-center gap-2">
-                    <Star size={24} fill="currentColor" className="text-yellow-500" />
-                    <span>Sumas Resueltas: {solvedCount}</span>
-                  </div>
-                </div>
-
-                <div className="flex-1 flex justify-center items-center px-2">
-                  <h1 className="text-2xl sm:text-4xl font-black text-gray-700 whitespace-nowrap hidden sm:block" style={{ fontFamily: '"Comic Sans MS", "Marker Felt", sans-serif' }}>
-                    Suma Paso a Paso
-                  </h1>
-                </div>
-
-                <div className="flex-1 flex justify-end items-center gap-2">
-                  <button onClick={toggleFullScreen} className="p-2 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-full transition-colors shrink-0" title="Pantalla Completa">
-                    {isFullscreen ? <Minimize size={24} /> : <Maximize size={24} />}
-                  </button>
-                </div>
-              </header>
-
-              {/* Pizarra Central */}
-              <div className="flex-1 w-full max-w-5xl mx-auto flex flex-col items-center justify-center min-h-0 py-2 sm:py-4 relative">
-                
-                {/* Indicador de Instrucción Activa */}
-                <div className="absolute top-0 sm:-top-2 z-30 flex items-center justify-center w-full pointer-events-none">
-                  <div className="bg-white/90 backdrop-blur-sm text-gray-700 px-6 py-2 sm:py-3 rounded-full font-bold shadow-md border-2 border-gray-200 text-base sm:text-xl transition-all duration-300 transform" style={{ fontFamily: '"Comic Sans MS", "Marker Felt", sans-serif' }}>
-                    {activeMessage}
-                  </div>
-                </div>
-
-                <WhiteboardFrame className="p-4 sm:p-8 flex flex-col items-center justify-center w-full h-full pt-12 sm:pt-16">
-                  
-                  {showCelebration && (
-                    <div className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm rounded-xl animate-pulse">
-                      <div className="text-yellow-400 mb-4 animate-bounce">
-                        <Star size={100} fill="currentColor" />
-                      </div>
-                      <h2 className="text-5xl sm:text-7xl font-black text-green-500 mb-2 drop-shadow-lg" style={{ fontFamily: '"Comic Sans MS", "Marker Felt", sans-serif' }}>¡Genial!</h2>
-                    </div>
-                  )}
-
-                  {/* Estructura de la Suma Vertical */}
-                  <div className="grid grid-cols-4 gap-x-2 sm:gap-x-6 gap-y-1 sm:gap-y-2 items-end justify-items-center w-full max-w-sm sm:max-w-md mx-auto" style={{ fontFamily: '"Comic Sans MS", "Chalkboard SE", "Marker Felt", sans-serif' }}>
-                    
-                    {/* Fila 1: Reservas ("Lo que llevo") */}
-                    <div></div> {/* Col 1: Signo */}
-                    <div>{renderBox('c_h', true)}</div> {/* Col 2: Centenas (No suele haber reserva aquí en 2 cifras, pero mantenemos simetría) */}
-                    <div>{renderBox('c_t', true)}</div> {/* Col 3: Decenas */}
-                    <div></div> {/* Col 4: Unidades */}
-
-                    {/* Fila 2: Número 1 */}
-                    <div></div>
-                    <div></div> {/* Centenas N1 */}
-                    <div className="text-red-500 text-6xl sm:text-7xl md:text-8xl font-black leading-none">{Math.floor(n1 / 10)}</div>
-                    <div className="text-blue-500 text-6xl sm:text-7xl md:text-8xl font-black leading-none">{n1 % 10}</div>
-
-                    {/* Fila 3: Número 2 */}
-                    <div className="text-gray-800 text-5xl sm:text-7xl md:text-8xl font-black leading-none self-end pb-2 sm:pb-0">+</div>
-                    <div></div> {/* Centenas N2 */}
-                    <div className="text-red-500 text-6xl sm:text-7xl md:text-8xl font-black leading-none">{Math.floor(n2 / 10)}</div>
-                    <div className="text-blue-500 text-6xl sm:text-7xl md:text-8xl font-black leading-none">{n2 % 10}</div>
-
-                    {/* Fila 4: Línea Divisoria */}
-                    <div className="col-span-4 w-full border-b-[6px] sm:border-b-[10px] border-gray-800 rounded-full my-2 sm:my-4"></div>
-
-                    {/* Fila 5: Resultado (Cajas para llenar) */}
-                    <div></div>
-                    <div>{renderBox('h')}</div>
-                    <div>{renderBox('t')}</div>
-                    <div>{renderBox('u')}</div>
-
-                  </div>
-                </WhiteboardFrame>
-              </div>
-
-              {/* Teclado Numérico (0-9) */}
-              <div className="shrink-0 w-full max-w-2xl mx-auto px-2 sm:px-4 pb-2 sm:pb-4">
-                <div className="grid grid-cols-5 gap-2 sm:gap-4">
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num) => (
-                    <button
-                      key={num}
-                      onClick={() => handleKeypadPress(num)}
-                      className="bg-white border-b-[6px] border-gray-300 hover:bg-gray-50 text-gray-800 text-3xl sm:text-5xl font-black py-3 sm:py-5 rounded-2xl shadow-sm active:border-b-0 active:translate-y-[6px] transition-all flex items-center justify-center select-none"
-                      style={{ fontFamily: '"Comic Sans MS", "Chalkboard SE", sans-serif' }}
-                    >
-                      {num}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-          );
+        // --- FUNCIONES DE ACTUALIZACIÓN DE ESTADO ---
+        function openCourse(courseId) {
+            state.activeCourse = COURSES.find(c => c.id === courseId);
+            state.activeTopicIndex = 0;
+            state.activeTab = 'Teoría';
+            renderApp();
+            window.scrollTo(0, 0);
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        function closeCourse() {
+            state.activeCourse = null;
+            renderApp();
+            window.scrollTo(0, 0);
+        }
+
+        function setTopic(index) {
+            state.activeTopicIndex = index;
+            renderApp();
+        }
+
+        function setTab(tab) {
+            state.activeTab = tab;
+            renderApp();
+        }
+
+        function toggleMobileMenu() {
+            state.mobileMenuOpen = !state.mobileMenuOpen;
+            renderApp();
+        }
+
+        function scrollToSection(id) {
+            state.mobileMenuOpen = false;
+            renderApp();
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }, 50);
+        }
+
+        // --- RENDERIZADO HTML ---
+        function renderApp() {
+            const app = document.getElementById('app');
+            
+            if (state.activeCourse) {
+                app.innerHTML = renderVirtualClassroom();
+            } else {
+                app.innerHTML = renderLandingPage();
+            }
+
+            // Inicializar iconos de Lucide después de actualizar el DOM
+            lucide.createIcons();
+        }
+
+        function renderVirtualClassroom() {
+            const course = state.activeCourse;
+            const topicName = course.topics[state.activeTopicIndex];
+            const topicNumber = String(state.activeTopicIndex + 1).padStart(2, '0');
+            const tabs = ['Teoría', 'Práctica', 'Evaluación', 'Materiales'];
+
+            // Generar la lista de temas en el sidebar
+            let topicsListHtml = '';
+            course.topics.forEach((topic, i) => {
+                const isActive = state.activeTopicIndex === i;
+                const activeClass = isActive 
+                    ? 'bg-white shadow-sm border border-gray-100 text-blue-900 font-medium' 
+                    : 'text-gray-500 hover:bg-gray-100';
+                const numberClass = isActive ? 'text-red-600 font-bold' : 'text-gray-400';
+                const topicNum = String(i + 1).padStart(2, '0');
+
+                topicsListHtml += `
+                    <li>
+                        <button onclick="setTopic(${i})" class="w-full text-left px-4 py-3 rounded-lg flex items-center gap-3 transition-colors ${activeClass}">
+                            <span class="text-xs shrink-0 ${numberClass}">${topicNum}</span>
+                            <span class="text-sm truncate" title="${topic}">${topic}</span>
+                        </button>
+                    </li>
+                `;
+            });
+
+            // Generar pestañas
+            let tabsHtml = '';
+            tabs.forEach(tab => {
+                const isActive = state.activeTab === tab;
+                const tabClass = isActive ? 'text-blue-900' : 'text-gray-400 hover:text-gray-600';
+                const underlineHtml = isActive ? '<span class="absolute bottom-0 left-0 w-full h-0.5 bg-red-600 rounded-t-full"></span>' : '';
+                
+                tabsHtml += `
+                    <button onclick="setTab('${tab}')" class="pb-4 text-sm font-medium transition-colors relative ${tabClass}">
+                        ${tab}
+                        ${underlineHtml}
+                    </button>
+                `;
+            });
+
+            return `
+                <div class="flex flex-col h-screen bg-white">
+                    <!-- Navbar Aula Virtual -->
+                    <header class="border-b border-gray-100 p-4 flex items-center justify-between z-10 bg-white shrink-0">
+                        <div class="flex items-center gap-4">
+                            <button onclick="closeCourse()" class="p-2 text-gray-400 hover:text-blue-900 hover:bg-gray-50 rounded-full transition-colors">
+                                <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                            </button>
+                            <div>
+                                <h1 class="font-semibold text-lg text-blue-900">${course.name}</h1>
+                                <p class="text-xs text-gray-500 tracking-wide uppercase">Educación sin Límites</p>
+                            </div>
+                        </div>
+                        <div class="hidden md:flex items-center">
+                            <span class="text-xs font-semibold text-red-600 bg-red-50 px-3 py-1 rounded-full uppercase tracking-wider">Sistema Helicoidal</span>
+                        </div>
+                    </header>
+
+                    <!-- Contenido Principal Aula Virtual -->
+                    <div class="flex flex-1 overflow-hidden">
+                        <!-- Sidebar (Temario) -->
+                        <aside class="w-72 bg-gray-50 border-r border-gray-100 overflow-y-auto hidden md:block custom-scrollbar shrink-0">
+                            <div class="p-6">
+                                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Temario del Curso</h2>
+                                <ul class="space-y-1">
+                                    ${topicsListHtml}
+                                </ul>
+                            </div>
+                        </aside>
+
+                        <!-- Área de Estudio -->
+                        <main class="flex-1 overflow-y-auto bg-white p-6 md:p-12 custom-scrollbar">
+                            <div class="max-w-3xl mx-auto">
+                                
+                                <!-- Reproductor de Video -->
+                                <div class="w-full aspect-video bg-gray-100 rounded-2xl flex items-center justify-center group cursor-pointer relative overflow-hidden border border-gray-100 shadow-sm">
+                                    <i data-lucide="play-circle" class="w-16 h-16 text-gray-300 group-hover:text-red-600 group-hover:scale-110 transition-all duration-300"></i>
+                                    <div class="absolute bottom-6 left-6">
+                                        <span class="bg-black/50 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full">15:00 min</span>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8">
+                                    <h2 class="text-2xl font-semibold text-blue-900 mb-2">Tema ${topicNumber}: ${topicName}</h2>
+                                    <p class="text-gray-500 text-sm">Profesor Experto en Preparación Preuniversitaria</p>
+                                </div>
+
+                                <!-- Pestañas de Navegación -->
+                                <div class="mt-10 border-b border-gray-100 flex gap-8">
+                                    ${tabsHtml}
+                                </div>
+                                    
+                                <!-- Contenido de la pestaña -->
+                                <div class="py-8">
+                                    <p class="text-gray-600 leading-relaxed mb-8">
+                                        En esta sesión abarcaremos los principios esenciales del curso. Aplicaremos el nivel helicoidal para asegurar el dominio progresivo de los temas más recurrentes en los exámenes de admisión.
+                                    </p>
+                                    
+                                    <div class="bg-gray-50 p-6 rounded-2xl flex items-start gap-4 border border-gray-100">
+                                        <i data-lucide="award" class="w-6 h-6 text-blue-900 shrink-0 mt-1"></i>
+                                        <div>
+                                            <h4 class="font-semibold text-blue-900 mb-1">Rigor Académico</h4>
+                                            <p class="text-sm text-gray-500 leading-relaxed">Contenido actualizado y diseñado específicamente para enfrentar los exámenes de admisión de las principales universidades del país.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </main>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLandingPage() {
+            // Generar tarjetas de estadísticas
+            let statsHtml = '';
+            STATS.forEach(stat => {
+                statsHtml += `
+                    <div class="flex flex-col items-center justify-center text-center px-4">
+                        <i data-lucide="${stat.icon}" class="w-8 h-8 text-blue-900 mb-4 opacity-80"></i>
+                        <p class="text-3xl md:text-4xl font-bold text-blue-900 mb-2">${stat.value}</p>
+                        <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider">${stat.label}</p>
+                    </div>
+                `;
+            });
+
+            // Generar tarjetas de metodología
+            let methodologyHtml = '';
+            METHODOLOGY.forEach(step => {
+                methodologyHtml += `
+                    <div class="bg-white rounded-2xl p-8 border border-gray-100 hover:border-blue-100 hover:shadow-md transition-all">
+                        <div class="mb-6 bg-gray-50 w-12 h-12 rounded-xl flex items-center justify-center">
+                            <i data-lucide="${step.icon}" class="w-6 h-6 text-red-600"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-blue-900 mb-1">${step.title}</h3>
+                        <span class="block text-xs text-red-600 font-medium mb-4">${step.time}</span>
+                        <p class="text-gray-500 text-sm leading-relaxed">${step.desc}</p>
+                    </div>
+                `;
+            });
+
+            // Generar tarjetas de cursos
+            let coursesHtml = '';
+            COURSES.forEach(course => {
+                coursesHtml += `
+                    <button onclick="openCourse(${course.id})" class="group flex items-center p-4 bg-gray-50 rounded-2xl hover:bg-blue-900 hover:text-white transition-all text-left border border-transparent hover:border-blue-900">
+                        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-blue-900 group-hover:text-red-600 shrink-0 shadow-sm mr-4 transition-colors">
+                            <i data-lucide="${course.icon}" class="w-5 h-5"></i>
+                        </div>
+                        <div class="overflow-hidden">
+                            <h3 class="font-semibold text-gray-800 group-hover:text-white text-sm truncate">${course.name}</h3>
+                            <span class="text-[10px] text-gray-400 group-hover:text-blue-200 uppercase tracking-wider">${course.category}</span>
+                        </div>
+                    </button>
+                `;
+            });
+
+            // Menú móvil
+            const mobileMenuHtml = state.mobileMenuOpen ? `
+                <div class="md:hidden bg-white border-b border-gray-100 p-6 space-y-4 absolute w-full shadow-lg">
+                    <button onclick="scrollToSection('metodologia')" class="block w-full text-left text-gray-600">Metodología</button>
+                    <button onclick="scrollToSection('cursos')" class="block w-full text-left text-gray-600">Cursos</button>
+                    <button onclick="scrollToSection('cursos')" class="w-full bg-blue-900 text-white px-6 py-3 rounded-xl font-medium mt-4">
+                        Ingresar a clases
+                    </button>
+                </div>
+            ` : '';
+
+            const menuIcon = state.mobileMenuOpen ? 'x' : 'menu';
+
+            return `
+                <!-- Navegación -->
+                <nav class="bg-white sticky top-0 z-50 border-b border-gray-100">
+                    <div class="max-w-6xl mx-auto px-6">
+                        <div class="flex justify-between h-24 items-center">
+                            <!-- Logo -->
+                            <div class="flex flex-col leading-none cursor-pointer" onclick="window.scrollTo(0,0)">
+                                <span class="text-2xl font-black italic tracking-tighter text-blue-900">
+                                    SACO <span class="text-red-600">OLIVEROS</span>
+                                </span>
+                                <span class="text-[9px] font-bold text-gray-400 tracking-widest uppercase mt-1">Academia Virtual</span>
+                            </div>
+
+                            <!-- Desktop Nav -->
+                            <div class="hidden md:flex items-center space-x-10">
+                                <button onclick="scrollToSection('metodologia')" class="text-sm text-gray-500 hover:text-blue-900 transition-colors">Metodología</button>
+                                <button onclick="scrollToSection('cursos')" class="text-sm text-gray-500 hover:text-blue-900 transition-colors">Cursos</button>
+                                <button onclick="scrollToSection('cursos')" class="bg-blue-900 text-white text-sm px-6 py-2.5 rounded-full font-medium hover:bg-blue-800 transition-colors shadow-sm">
+                                    Ingresar a clases
+                                </button>
+                            </div>
+
+                            <!-- Mobile Menu Button -->
+                            <div class="md:hidden">
+                                <button onclick="toggleMobileMenu()" class="text-gray-500 p-2">
+                                    <i data-lucide="${menuIcon}" class="w-6 h-6"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    ${mobileMenuHtml}
+                </nav>
+
+                <!-- Hero Section -->
+                <section class="bg-white py-20 lg:py-32">
+                    <div class="max-w-4xl mx-auto px-6 text-center">
+                        <span class="inline-block py-1.5 px-4 rounded-full bg-red-50 text-red-600 text-xs font-bold uppercase tracking-wider mb-8 border border-red-100">
+                            Educación sin límites
+                        </span>
+                        <h1 class="text-4xl md:text-6xl font-bold tracking-tight text-blue-900 mb-6 leading-[1.1]">
+                            Tu camino a la universidad <br class="hidden md:block"/> comienza de forma inteligente.
+                        </h1>
+                        <p class="text-lg text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
+                            Preparación de alta calidad enfocada en resultados. Estudia a tu propio ritmo empleando el Sistema Helicoidal desde cualquier lugar del país.
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button onclick="scrollToSection('cursos')" class="bg-red-600 text-white px-8 py-3.5 rounded-full font-medium hover:bg-red-700 transition-colors shadow-sm">
+                                Ver malla curricular
+                            </button>
+                            <button onclick="scrollToSection('metodologia')" class="bg-white text-blue-900 border border-gray-200 px-8 py-3.5 rounded-full font-medium hover:bg-gray-50 transition-colors">
+                                Conocer más
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Statistics -->
+                <section class="bg-white pb-20">
+                    <div class="max-w-6xl mx-auto px-6">
+                        <div class="border-t border-b border-gray-100 py-12">
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-gray-100">
+                                ${statsHtml}
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Metodología -->
+                <section id="metodologia" class="py-24 bg-gray-50">
+                    <div class="max-w-6xl mx-auto px-6">
+                        <div class="mb-16">
+                            <h2 class="text-3xl font-bold text-blue-900 mb-4 tracking-tight">Estructura de aprendizaje</h2>
+                            <p class="text-gray-500 max-w-2xl leading-relaxed">
+                                Desarrollado con rigor académico y progresión de dificultad garantizada. Cada tema de nuestro currículo se domina a través de 4 etapas claras y concisas.
+                            </p>
+                        </div>
+                        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            ${methodologyHtml}
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Cursos -->
+                <section id="cursos" class="py-24 bg-white">
+                    <div class="max-w-6xl mx-auto px-6">
+                        <div class="mb-16">
+                            <h2 class="text-3xl font-bold text-blue-900 mb-4 tracking-tight">Currículo Integral</h2>
+                            <p class="text-gray-500 max-w-2xl leading-relaxed">
+                                Accede a 16 cursos completos diseñados para abarcar todos los frentes de los exámenes de admisión más exigentes. Selecciona un curso para ver su temario.
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            ${coursesHtml}
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Footer Minimalista -->
+                <footer class="bg-white border-t border-gray-100 pt-16 pb-8">
+                    <div class="max-w-6xl mx-auto px-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+                            <div>
+                                <span class="text-xl font-black italic tracking-tighter text-blue-900 block mb-4">
+                                    SACO <span class="text-red-600">OLIVEROS</span>
+                                </span>
+                                <p class="text-gray-500 text-sm leading-relaxed max-w-md">
+                                    Garantizamos el acceso a la educación preuniversitaria de calidad, empleando la tecnología para romper barreras económicas y geográficas.
+                                </p>
+                            </div>
+                            <div class="grid grid-cols-2 gap-8 md:justify-items-end">
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 mb-4 text-sm">Plataforma</h4>
+                                    <ul class="space-y-3 text-sm text-gray-500">
+                                        <li><button onclick="scrollToSection('cursos')" class="hover:text-blue-900">Cursos</button></li>
+                                        <li><button onclick="scrollToSection('metodologia')" class="hover:text-blue-900">Metodología</button></li>
+                                        <li><a href="#" class="hover:text-blue-900">Docentes</a></li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-800 mb-4 text-sm">Soporte</h4>
+                                    <ul class="space-y-3 text-sm text-gray-500">
+                                        <li><a href="#" class="hover:text-blue-900">Contacto</a></li>
+                                        <li><a href="#" class="hover:text-blue-900">Privacidad</a></li>
+                                        <li><a href="#" class="hover:text-blue-900">Términos</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-100 pt-8 flex flex-col sm:flex-row justify-between items-center text-xs text-gray-400">
+                            <p>© ${new Date().getFullYear()} Saco Oliveros. Educación sin Límites.</p>
+                            <p class="mt-2 sm:mt-0">Desarrollado con el Sistema Helicoidal</p>
+                        </div>
+                    </div>
+                </footer>
+            `;
+        }
+
+        // --- INICIALIZACIÓN ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderApp();
+        });
+
     </script>
 </body>
 </html>
